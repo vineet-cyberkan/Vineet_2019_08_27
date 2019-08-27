@@ -1,5 +1,5 @@
 var canvas = window.canvas || {};
-var d_Cont = '#dynamic_content', photos_Data = [];
+var d_Cont = '#dynamic_content', photos_Data = [], canvas_data=[] ;
 
 (function (window, document, $, canvas) {
 	canvas.generate = {
@@ -21,7 +21,8 @@ var d_Cont = '#dynamic_content', photos_Data = [];
 			canvas.generate.pageLoaderShow(); // show loader 
 
 			$.ajax({
-	            url: 'https://jsonplaceholder.typicode.com/photos', // data request path
+	            //url: 'https://jsonplaceholder.typicode.com/photos', // data request path live
+	            url: 'http://localhost/photos/photos.json', // data request path localhost
 	            type: 'GET',
 	            contentType: 'application/json',
 	            dataType: 'json',
@@ -91,13 +92,13 @@ var d_Cont = '#dynamic_content', photos_Data = [];
 			if ( canvas_value != 0 && photos_Data.length > 0 ) {
 				//$('#canvasbox'+canvas_value).parent().css('border-color','red' )
 				$(selected_canvas).css('border-color','#f00' );
-				canvas.generate.insertToCanvas(photos_Data, selected_canvas);
+				canvas.generate.genrateCanvasData(photos_Data, selected_canvas);
 			} else {
 				alert('Please select a canvas!')
 			}
 		},
 
-		insertToCanvas: function(data, id){
+		genrateCanvasData: function(data, id){
 			var canvas_fabric = new fabric.Canvas(id), random_obj, data_nodes =[1, 2], node_obj;
 			random_obj = canvas.generate.generate_uniq_int(3, 4997); //for object randomly from the JSON endpoint
 			//debugger;
@@ -109,60 +110,47 @@ var d_Cont = '#dynamic_content', photos_Data = [];
 			for( var i = 0; i < data.length; i++ ){
 				for( var x = 0; x < data_nodes.length; x++ ){
 
-					var html_node = ''; // 2. Of the selected objects:
+					var html_node_key = ''; // 2. Of the selected objects:
+					var html_node_val = ''; // 2. Of the selected objects:
 					
 					if (i == data_nodes[x] ) {
 						//console.log(data_nodes[x]);
 						//console.log(data[i]);
 						node_obj = data[data_nodes[x]];
-						console.log(node_obj);
+						//console.log(node_obj);
 
-						/*for( var node_name in node_obj ){
-							//console.log('node_name =>'+ node_name);
-							//console.log('node_value =>'+ node_obj[node_name]);
-							if (node_name == 'id' && canvas.generate.evenOrOdd(node_obj[node_name]) == 'odd'){ // 1. if ‘id’ is odd, insert ‘thumbnailUrl’ as an image in the selected canvas. 
-
-								//console.log('odd node_value =>'+ node_obj[node_name]);
-								//console.log('thumbnailUrl =>'+ node_obj['thumbnailUrl']);
-								html_node = '<img src="'+node_obj['thumbnailUrl']+'" />';
-							};
-
-							if (node_name == 'id' && canvas.generate.evenOrOdd(node_obj[node_name]) == 'even' ) {  // if ‘id’ is even, display ‘title’ in the selected canvas. Thus, the prior rule becomes invalid.
-								//console.log('even node_value =>'+ node_obj[node_name]);
-								//console.log('title =>'+ node_obj['title']);
-								html_node = '<h2>'+node_obj['title']+'</h2>';
-							};
-
-							if (node_name == 'albumId' && node_obj[node_name] >= 100){
-								//console.log('albumId >=100  =>'+ node_obj[node_name]);
-								html_node = '<p>'+node_obj['url']+'</p>';
-							};
-						}*/
 						if ( canvas.generate.evenOrOdd(node_obj['id']) == 'odd'){ // 1. if ‘id’ is odd, insert ‘thumbnailUrl’ as an image in the selected canvas. 
-
-							//console.log('odd node_value =>'+ node_obj[node_name]);
-							//console.log('thumbnailUrl =>'+ node_obj['thumbnailUrl']);
-							html_node = '<img src="'+node_obj['thumbnailUrl']+'" />';
+							html_node_key = 'image';
+							html_node_val = '<img src="'+node_obj['thumbnailUrl']+'" />';
 						};
 
 						if ( canvas.generate.evenOrOdd(node_obj['id']) == 'even' ) {  // if ‘id’ is even, display ‘title’ in the selected canvas. Thus, the prior rule becomes invalid.
-							//console.log('even node_value =>'+ node_obj[node_name]);
-							//console.log('title =>'+ node_obj['title']);
-							html_node = '<h2>'+node_obj['title']+'</h2>';
+							html_node_key = 'title';
+							html_node_val = '<h2>'+node_obj['title']+'</h2>';
 						};
 
 						if ( node_obj['albumId'] >= 100){
-							//console.log('albumId >=100  =>'+ node_obj[node_name]);
-							html_node = '<p>'+node_obj['url']+'</p>';
+							html_node_key = 'url';
+							html_node_val = '<p>'+node_obj['url']+'</p>';
 						};
 					}
 
-
-							if (html_node != '') {
-								console.log('html_node =>'+ html_node);
-							}
+					if (html_node_key != '' && html_node_val != '') {
+						//console.log('html_node_key =>'+ html_node_key);
+						//console.log('html_node_val =>'+ html_node_val);
+						canvas_data.push(html_node_val);
+						//var key = html_node_key, val = html_node_val ;
+						//canvas_data[key] = val;
+					}
 				}
 			}
+
+			console.log(canvas_data);
+			//insertToCanvas(canvas_fabric);
+		},
+
+		insertToCanvas: function(newCanvas) {
+			console.log(newCanvas);
 		},
 
 		evenOrOdd: function(num) {
@@ -182,10 +170,12 @@ window.onload = function(){
 
 	$(document).on('click', '#genrate_canvas', function() {
 		canvas.generate.createDynamicButtons();
+		canvas_data=[];
 	});
 
 	$(document).on('click', '#insert_canvas', function() {
 		canvas.generate.selectCanvas();
+		canvas_data=[];
 	});
 }
 
