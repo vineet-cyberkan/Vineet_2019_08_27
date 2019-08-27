@@ -1,0 +1,12 @@
+.ajax-loader{
+	background-image: url('loading-icon.svg');
+	position: fixed;
+	background-color: #fff;
+	opacity: 0.8;
+	height: 100%;
+	width: 100%;
+	top: 0px;
+    left: 0px;
+	background-repeat: no-repeat;
+    background-position: center;
+}
