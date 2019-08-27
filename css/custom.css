@@ -1,3 +1,9 @@
+.mb-15{
+	margin-bottom: 15px;
+}
+hr{
+	border: 0px;
+}
 .ajax-loader{
 	background-image: url('../loading-icon.svg');
 	position: fixed;
@@ -9,4 +15,16 @@
     left: 0px;
 	background-repeat: no-repeat;
     background-position: center;
+}
+#insert_canvas, #select {
+	max-width: 130px;
+    display: inline-block;
+    margin-right: 15px;
+    vertical-align: top;
+}
+
+.canvasbox{
+	border: 1px solid #000;
+	display: block;
+    float: left;
 }
