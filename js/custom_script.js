@@ -103,22 +103,73 @@ var d_Cont = '#dynamic_content', photos_Data = [];
 			//debugger;
 			//console.log(canvas_fabric);
 			//console.log(random_obj);
-			data_nodes.push(random_obj, data.length - 2, data.length - 1);
+			data_nodes.push(random_obj, data.length - 2, data.length - 1);  // 1. Select the first 2 objects, last 2 objects, and 1 object randomly from the JSON endpoint. 
 			//console.log(data_nodes);
 			
 			for( var i = 0; i < data.length; i++ ){
 				for( var x = 0; x < data_nodes.length; x++ ){
-					if (i == x ) {
+
+					var html_node = ''; // 2. Of the selected objects:
+					
+					if (i == data_nodes[x] ) {
 						//console.log(data_nodes[x]);
 						//console.log(data[i]);
-						node_obj = data[i];
+						node_obj = data[data_nodes[x]];
+						console.log(node_obj);
 
-						for( var node_name in node_obj ){
-							console.log('node_name =>'+ node_name);
-							console.log('node_value =>'+ node_obj[node_name]);
-						}
+						/*for( var node_name in node_obj ){
+							//console.log('node_name =>'+ node_name);
+							//console.log('node_value =>'+ node_obj[node_name]);
+							if (node_name == 'id' && canvas.generate.evenOrOdd(node_obj[node_name]) == 'odd'){ // 1. if ‘id’ is odd, insert ‘thumbnailUrl’ as an image in the selected canvas. 
+
+								//console.log('odd node_value =>'+ node_obj[node_name]);
+								//console.log('thumbnailUrl =>'+ node_obj['thumbnailUrl']);
+								html_node = '<img src="'+node_obj['thumbnailUrl']+'" />';
+							};
+
+							if (node_name == 'id' && canvas.generate.evenOrOdd(node_obj[node_name]) == 'even' ) {  // if ‘id’ is even, display ‘title’ in the selected canvas. Thus, the prior rule becomes invalid.
+								//console.log('even node_value =>'+ node_obj[node_name]);
+								//console.log('title =>'+ node_obj['title']);
+								html_node = '<h2>'+node_obj['title']+'</h2>';
+							};
+
+							if (node_name == 'albumId' && node_obj[node_name] >= 100){
+								//console.log('albumId >=100  =>'+ node_obj[node_name]);
+								html_node = '<p>'+node_obj['url']+'</p>';
+							};
+						}*/
+						if ( canvas.generate.evenOrOdd(node_obj['id']) == 'odd'){ // 1. if ‘id’ is odd, insert ‘thumbnailUrl’ as an image in the selected canvas. 
+
+							//console.log('odd node_value =>'+ node_obj[node_name]);
+							//console.log('thumbnailUrl =>'+ node_obj['thumbnailUrl']);
+							html_node = '<img src="'+node_obj['thumbnailUrl']+'" />';
+						};
+
+						if ( canvas.generate.evenOrOdd(node_obj['id']) == 'even' ) {  // if ‘id’ is even, display ‘title’ in the selected canvas. Thus, the prior rule becomes invalid.
+							//console.log('even node_value =>'+ node_obj[node_name]);
+							//console.log('title =>'+ node_obj['title']);
+							html_node = '<h2>'+node_obj['title']+'</h2>';
+						};
+
+						if ( node_obj['albumId'] >= 100){
+							//console.log('albumId >=100  =>'+ node_obj[node_name]);
+							html_node = '<p>'+node_obj['url']+'</p>';
+						};
 					}
+
+
+							if (html_node != '') {
+								console.log('html_node =>'+ html_node);
+							}
 				}
+			}
+		},
+
+		evenOrOdd: function(num) {
+			if ( (num % 2) == 0 ) {
+				return 'even';
+			} else {
+				return 'odd';
 			}
 		}
 	}
