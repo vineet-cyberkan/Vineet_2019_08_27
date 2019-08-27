@@ -1,5 +1,5 @@
 .ajax-loader{
-	background-image: url('loading-icon.svg');
+	background-image: url('../loading-icon.svg');
 	position: fixed;
 	background-color: #fff;
 	opacity: 0.8;
