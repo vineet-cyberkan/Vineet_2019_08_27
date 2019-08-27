@@ -31,7 +31,7 @@ var d_Cont = '#dynamic_content', photos_Data = [];
 					//console.log( "photosData count =>"+photosData.length);
 					if (photosData.length > 0 ) {
 						photos_Data = photosData;    // stored data into an object when genrating canvas again and again
-						//canvas.generate.createDynamicButtons(); // to run in sequence 
+						canvas.generate.createDynamicButtons(); // to run in sequence 
 					}
 	            },
 
@@ -61,22 +61,22 @@ var d_Cont = '#dynamic_content', photos_Data = [];
 				$(d_Cont).empty().append(dynamic_select, btn_Insert, '<hr />', canvas_area);
 				uniq_int = canvas.generate.generate_uniq_int(2, 4);
 
-				console.log("uniq_int =>"+uniq_int);
+				//console.log("uniq_int =>"+uniq_int);
 				canvas_attr = parseInt( ( $(d_Cont).width()/2 ) - ( (canvas_stroke+canvas_space)*2 ) ); // calculate for canvas styling
-				console.log("main container width =>"+canvas_attr);
+				//console.log("main container width =>"+canvas_attr);
 
 				// append dynamic values
 
 				for (var number = 0; number < uniq_int; number++) {
 					dynamic_select.append('<option id="customSelectOption'+(number+1)+'" value="'+(number+1)+'">Canvas '+(number+1)+'</option>');
-					//canvas_area.append('<div class="canvasbox" style="margin:'+canvas_space+'px;"><canvas height="'+canvas_attr+'" width="'+canvas_attr+'" id="canvasbox'+(number+1)+'"></canvas></div>');
 					canvas_area.append(
-						'<canvas height="'+canvas_attr
-						+'" width="'+canvas_attr
+						'<div class="canvasbox" style="margin:'+canvas_space+'px;'
+							+'height:'+canvas_attr+'px; width:'+canvas_attr+'px;'
+						+'"><canvas height="'+(canvas_attr - 1)
+						+'" width="'+(canvas_attr - 1)
 						+'" id="canvasbox'+(number+1)
-						+'" style="border:'+canvas_stroke+'px solid #000;'
-							+'margin:'+canvas_space+'px;'
-						+'"></canvas>'
+						//+'" style="border:'+canvas_stroke+'px solid #000;'
+						+'"></canvas></div>'
 						);
 				}				
 
@@ -85,13 +85,40 @@ var d_Cont = '#dynamic_content', photos_Data = [];
 			}
 		},
 
-		insertToCanvas: function(){
-			var canvas_value = $('#select').val();
-			if ( canvas_value != 0 ) {
+		selectCanvas: function(){
+			var canvas_value = $('#select').val(), selected_canvas = 'canvasbox'+canvas_value;
+
+			if ( canvas_value != 0 && photos_Data.length > 0 ) {
 				//$('#canvasbox'+canvas_value).parent().css('border-color','red' )
-				$('#canvasbox'+canvas_value).css('border-color','#f00' )
+				$(selected_canvas).css('border-color','#f00' );
+				canvas.generate.insertToCanvas(photos_Data, selected_canvas);
 			} else {
 				alert('Please select a canvas!')
+			}
+		},
+
+		insertToCanvas: function(data, id){
+			var canvas_fabric = new fabric.Canvas(id), random_obj, data_nodes =[1, 2], node_obj;
+			random_obj = canvas.generate.generate_uniq_int(3, 4997); //for object randomly from the JSON endpoint
+			//debugger;
+			//console.log(canvas_fabric);
+			//console.log(random_obj);
+			data_nodes.push(random_obj, data.length - 2, data.length - 1);
+			//console.log(data_nodes);
+			
+			for( var i = 0; i < data.length; i++ ){
+				for( var x = 0; x < data_nodes.length; x++ ){
+					if (i == x ) {
+						//console.log(data_nodes[x]);
+						//console.log(data[i]);
+						node_obj = data[i];
+
+						for( var node_name in node_obj ){
+							console.log('node_name =>'+ node_name);
+							console.log('node_value =>'+ node_obj[node_name]);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -107,7 +134,7 @@ window.onload = function(){
 	});
 
 	$(document).on('click', '#insert_canvas', function() {
-		canvas.generate.insertToCanvas();
+		canvas.generate.selectCanvas();
 	});
 }
 
