@@ -264,8 +264,8 @@ window.addEventListener("touchstart", function() {
 	                	//console.log( 'evnt.target multiselect object   => '+ evnt.target._objects );
 	            		var activeObject = canvas_Obj[dragin_from].getActiveObject();
 
-	            		console.log( 'activeObject  => '+ activeObject);	                	
-	            		console.log( 'fabric.ActiveSelection  => '+ fabric.ActiveSelection);	                	
+	            		// console.log( 'activeObject  => '+ activeObject);	                	
+	            		// console.log( 'fabric.ActiveSelection  => '+ fabric.ActiveSelection);	                	
 	                }
 	            }
             } else {
