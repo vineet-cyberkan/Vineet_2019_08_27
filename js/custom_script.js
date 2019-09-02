@@ -246,10 +246,10 @@ window.addEventListener("touchstart", function() {
             if (evnt.e.target.previousSibling != null) {
 	            draging_to = evnt.e.target.previousSibling.id
 	            if ( (draging_to != undefined) && (draging_to != dragin_from)) {
-
-	                //if ((evnt.target != null) && (evnt.target._objects == undefined)) {
+	            	console.log( 'evnt.target  => '+ evnt.target);
 	                if (evnt.target._objects == undefined) {
-		        		console.log( 'evnt.target  => '+ evnt.target);
+		        		//console.log( 'evnt.target  => '+ evnt.target);
+		        		//console.log( 'activeObject  => '+ activeObject);
 
 	                    var viewport = _this.calcViewportBoundaries();
 	                    if (evnt.target.canvas === canvas_Obj[dragin_from]) {
@@ -259,8 +259,13 @@ window.addEventListener("touchstart", function() {
 	                        }
 	                    }
 	                } else {
-		        		console.log( 'evnt.target  => '+ evnt.target);
-	                	console.log( 'evnt.target multiselect object   => '+ evnt.target._objects )
+		        		//console.log( 'evnt.target  => '+ evnt.target);
+		        		//console.log( 'activeObject  => '+ activeObject);
+	                	//console.log( 'evnt.target multiselect object   => '+ evnt.target._objects );
+	            		var activeObject = canvas_Obj[dragin_from].getActiveObject();
+
+	            		console.log( 'activeObject  => '+ activeObject);	                	
+	            		console.log( 'fabric.ActiveSelection  => '+ fabric.ActiveSelection);	                	
 	                }
 	            }
             } else {
@@ -268,6 +273,10 @@ window.addEventListener("touchstart", function() {
             	console.log(" Draging to =>"+evnt.e.target.previousSibling)
             	return false;
             }
+        },
+
+        moveActiveSelection: function(){
+
         },
 
         moveItem: function(fromCanvas, toCanvas, active_sub_obj) {
