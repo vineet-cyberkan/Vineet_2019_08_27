@@ -81,7 +81,7 @@ window.addEventListener("touchstart", function() {
         genrateCanvasData: function(data, selected_canvas) {
             var random_obj, data_nodes = [1, 2];
             // genrateCanvasData: function(data, id){
-            // 	var selected_canvas = new fabric.Canvas(id), random_obj, data_nodes =[1, 2];
+            //     var selected_canvas = new fabric.Canvas(id), random_obj, data_nodes =[1, 2];
 
             random_obj = canvas.generate.generate_uniq_int(3, 4997); //for object randomly from the JSON endpoint
             data_nodes.push(random_obj, data.length - 2, data.length - 1); // 1. Select the first 2 objects, last 2 objects, and 1 object randomly from the JSON endpoint. 
@@ -234,44 +234,53 @@ window.addEventListener("touchstart", function() {
                 var draging_to = canvas_Obj_id[c_id];
                 if (draging_to != undefined) {
                     canvas_Obj[draging_to].on("mouse:moved", canvas.generate.onObjectMoving(evnt, draging_from, draging_to, _this))
-                    //canvas_Obj[draging_to].on("object:moving", canvas.generate.onObjectMoving(evnt, draging_to, draging_from, _this));
 
                 }
             }
         },
 
         onObjectMoving: function(evnt, dragin_from, draging_to, _this) {
-            //console.log( 'evnt.e.target.previousSibling => '+ evnt.e.target.previousSibling)
-            //console.log( 'evnt.e.target.previousSibling.id => '+ evnt.e.target.previousSibling.id)
             if (evnt.e.target.previousSibling != null) {
-	            draging_to = evnt.e.target.previousSibling.id
-	            if ( (draging_to != undefined) && (draging_to != dragin_from)) {
-	            	console.log( 'evnt.target  => '+ evnt.target);
-	                if (evnt.target._objects == undefined) {
-		        		//console.log( 'evnt.target  => '+ evnt.target);
-		        		//console.log( 'activeObject  => '+ activeObject);
+                draging_to = evnt.e.target.previousSibling.id
+                if ( (draging_to != undefined) && (draging_to != dragin_from)) {
+                    //console.log( 'evnt.target  => '+ evnt.target);
 
-	                    var viewport = _this.calcViewportBoundaries();
-	                    if (evnt.target.canvas === canvas_Obj[dragin_from]) {
-	                        if ((evnt.target.left > viewport.br.x || evnt.target.left < viewport.tl.x) || (evnt.target.top > viewport.bl.y || evnt.target.top < viewport.br.y)) {
-	                            canvas.generate.moveItem(canvas_Obj[dragin_from], canvas_Obj[draging_to], evnt.target);
-	                            return;
-	                        }
-	                    }
-	                } else {
-		        		//console.log( 'evnt.target  => '+ evnt.target);
-		        		//console.log( 'activeObject  => '+ activeObject);
-	                	//console.log( 'evnt.target multiselect object   => '+ evnt.target._objects );
-	            		var activeObject = canvas_Obj[dragin_from].getActiveObject();
+                    var viewport = _this.calcViewportBoundaries(), from = canvas_Obj[dragin_from], to = canvas_Obj[draging_to];
+                    var activeObject = from.getActiveObject();
+                    var activeGroup = from.getActiveObjects();
+                    //console.log( activeObject, activeGroup)
+                    if (evnt.target._objects == undefined) {
+                        if (evnt.target.canvas === from) {
+                            if ((evnt.target.left > viewport.br.x || evnt.target.left < viewport.tl.x) || (evnt.target.top > viewport.bl.y || evnt.target.top < viewport.br.y)) {
+                                canvas.generate.moveItem(from, to, evnt.target);
+                                return;
+                            }
+                        }
+                    } else {
+                        if (activeGroup.length > 0) {
+                            for (var g = 0; g < activeGroup.length; g++) {
+                                var activeSubObj = activeGroup[g];
+                                from.remove(activeSubObj);
+                                var pTransform = from._currentTransform;
+                                from._currentTransform = null;
 
-	            		// console.log( 'activeObject  => '+ activeObject);	                	
-	            		// console.log( 'fabric.ActiveSelection  => '+ fabric.ActiveSelection);	                	
-	                }
-	            }
+                                activeSubObj.scaleX;
+                                activeSubObj.canvas = to;
+                                activeSubObj.migrated = true;
+
+                                to.add(activeSubObj);
+                                to._currentTransform = pTransform;
+                            }
+                        }
+                        
+                        from.discardActiveObject();
+                        to.setActiveObject(activeObject);
+                    }
+                }
             } else {
-            	//debugger;
-            	console.log(" Draging to =>"+evnt.e.target.previousSibling)
-            	return false;
+                //debugger;
+                console.log(" Draging to =>"+evnt.e.target.previousSibling)
+                return false;
             }
         },
 
@@ -280,63 +289,63 @@ window.addEventListener("touchstart", function() {
         },
 
         moveItem: function(fromCanvas, toCanvas, active_sub_obj) {
-        	if( toCanvas != undefined ){
-	            fromCanvas.remove(active_sub_obj);
+            if( toCanvas != undefined ){
+                fromCanvas.remove(active_sub_obj);
 
-	            var pendingTransform = fromCanvas._currentTransform;
-	            fromCanvas._currentTransform = null;
-	            //console.log(fabric.document)
-	            var removeListener = fabric.util.removeListener;
-	            var addListener = fabric.util.addListener; {
-	                removeListener(fabric.document, 'mouseup', fromCanvas._onMouseUp);
-	                removeListener(fabric.document, 'touchend', fromCanvas._onMouseUp);
+                var pendingTransform = fromCanvas._currentTransform;
+                fromCanvas._currentTransform = null;
+                //console.log(fabric.document)
+                var removeListener = fabric.util.removeListener;
+                var addListener = fabric.util.addListener; {
+                    removeListener(fabric.document, 'mouseup', fromCanvas._onMouseUp);
+                    removeListener(fabric.document, 'touchend', fromCanvas._onMouseUp);
 
-	                removeListener(fabric.document, 'mousemove', fromCanvas._onMouseMove);
-	                removeListener(fabric.document, 'touchmove', fromCanvas._onMouseMove);
+                    removeListener(fabric.document, 'mousemove', fromCanvas._onMouseMove);
+                    removeListener(fabric.document, 'touchmove', fromCanvas._onMouseMove);
 
-	                addListener(fromCanvas.upperCanvasEl, 'mousemove', fromCanvas._onMouseMove);
-	                addListener(fromCanvas.upperCanvasEl, 'touchmove', fromCanvas._onMouseMove, {
-	                    passive: false
-	                });
+                    addListener(fromCanvas.upperCanvasEl, 'mousemove', fromCanvas._onMouseMove);
+                    addListener(fromCanvas.upperCanvasEl, 'touchmove', fromCanvas._onMouseMove, {
+                        passive: false
+                    });
 
-	                if (isTouchDevice) {
-	                    // Wait 300ms before rebinding mousedown to prevent double triggers
-	                    // from touch devices
-	                    var _this = fromCanvas;
-	                    setTimeout(function() {
-	                        addListener(_this.upperCanvasEl, 'mousedown', _this._onMouseDown);
-	                    }, 300);
-	                }
-	            } {
-	                addListener(fabric.document, 'touchend', toCanvas._onMouseUp, {
-	                    passive: false
-	                });
-	                addListener(fabric.document, 'touchmove', toCanvas._onMouseMove, {
-	                    passive: false
-	                });
+                    if (isTouchDevice) {
+                        // Wait 300ms before rebinding mousedown to prevent double triggers
+                        // from touch devices
+                        var _this = fromCanvas;
+                        setTimeout(function() {
+                            addListener(_this.upperCanvasEl, 'mousedown', _this._onMouseDown);
+                        }, 300);
+                    }
+                } {
+                    addListener(fabric.document, 'touchend', toCanvas._onMouseUp, {
+                        passive: false
+                    });
+                    addListener(fabric.document, 'touchmove', toCanvas._onMouseMove, {
+                        passive: false
+                    });
 
-	                removeListener(toCanvas.upperCanvasEl, 'mousemove', toCanvas._onMouseMove);
-	                removeListener(toCanvas.upperCanvasEl, 'touchmove', toCanvas._onMouseMove);
+                    removeListener(toCanvas.upperCanvasEl, 'mousemove', toCanvas._onMouseMove);
+                    removeListener(toCanvas.upperCanvasEl, 'touchmove', toCanvas._onMouseMove);
 
-	                if (isTouchDevice) {
-	                    // Unbind mousedown to prevent double triggers from touch devices
-	                    removeListener(toCanvas.upperCanvasEl, 'mousedown', toCanvas._onMouseDown);
-	                } else {
-	                    addListener(fabric.document, 'mouseup', toCanvas._onMouseUp);
-	                    addListener(fabric.document, 'mousemove', toCanvas._onMouseMove);
-	                }
-	            }
+                    if (isTouchDevice) {
+                        // Unbind mousedown to prevent double triggers from touch devices
+                        removeListener(toCanvas.upperCanvasEl, 'mousedown', toCanvas._onMouseDown);
+                    } else {
+                        addListener(fabric.document, 'mouseup', toCanvas._onMouseUp);
+                        addListener(fabric.document, 'mousemove', toCanvas._onMouseMove);
+                    }
+                }
 
 
-	            setTimeout(function() {
-	                active_sub_obj.scaleX;
-	                active_sub_obj.canvas = toCanvas;
-	                active_sub_obj.migrated = true;
-	                toCanvas.add(active_sub_obj);
+                setTimeout(function() {
+                    active_sub_obj.scaleX;
+                    active_sub_obj.canvas = toCanvas;
+                    active_sub_obj.migrated = true;
 
-	                toCanvas._currentTransform = pendingTransform;
-	                toCanvas.setActiveObject(active_sub_obj);
-	            }, 10);
+                    toCanvas.add(active_sub_obj);
+                    toCanvas._currentTransform = pendingTransform;
+                    toCanvas.setActiveObject(active_sub_obj);
+                }, 10);
             }
         }
     }
