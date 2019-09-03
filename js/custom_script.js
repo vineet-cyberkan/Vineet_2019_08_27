@@ -257,24 +257,39 @@ window.addEventListener("touchstart", function() {
                             }
                         }
                     } else {
-                        if (activeGroup.length > 0) {
-                            for (var g = 0; g < activeGroup.length; g++) {
-                                var activeSubObj = activeGroup[g];
-                                from.remove(activeSubObj);
-                                var pTransform = from._currentTransform;
-                                from._currentTransform = null;
+                        if (from.getActiveObject() != null ) {
+                            //console.log(from, to);
+                            //console.log(evnt.target.left, viewport.br.x);
+                            if (evnt.target.canvas === from && ((evnt.target.left > viewport.br.x || evnt.target.left < viewport.tl.x) || (evnt.target.top > viewport.bl.y || evnt.target.top < viewport.br.y))) {
+                                var obj_group=[], pTransform;
 
-                                activeSubObj.scaleX;
-                                activeSubObj.canvas = to;
-                                activeSubObj.migrated = true;
+                                if (activeGroup.length > 0) {
+                                    for (var g = 0; g < activeGroup.length; g++) {
+                                        var activeSubObj = null;
 
-                                to.add(activeSubObj);
-                                to._currentTransform = pTransform;
+                                        activeSubObj = activeGroup[g];
+                                        from.remove(activeSubObj);
+                                        pTransform = from._currentTransform;
+
+                                        activeSubObj.scaleX;
+                                        activeSubObj.canvas = to;
+                                        activeSubObj.migrated = true;
+
+                                        activeSubObj.setCoords();
+                                        to.add(activeSubObj);
+                                        obj_group.push(activeSubObj);
+                                        //activeSubObj.set('active', true);
+                                    }
+                                }
+                                //to._objects = obj_group;
+                                //to._currentTransform = pTransform;
+                                //from._currentTransform = null;
+                                //debugger;
+                                from.discardActiveObject();
+                                //from.remove(activeGroup);
+                                //to.setActiveObject(obj_group);
                             }
                         }
-                        
-                        from.discardActiveObject();
-                        to.setActiveObject(activeObject);
                     }
                 }
             } else {
