@@ -125,7 +125,7 @@ window.addEventListener("touchstart", function() {
                     if (node.length == 2) {
                         var tag_name = node[1],
                             node = node[0],
-                            top_pos = parseInt(canvas.generate.generate_uniq_int(10, $('#id_canvasParent_1').width()));
+                            top_pos = parseInt( canvas.generate.generate_uniq_int(10, parseInt($('#id_canvasParent_1').width() - 50) ) );
 
                         //console.log(top_pos);
                         //console.log(selected_canvas);
@@ -201,12 +201,10 @@ window.addEventListener("touchstart", function() {
                         '<div class="canvasbox" id="' + id_canvasParent +
                         '" style="margin:' + canvas_space + 'px;' +
                         'height:' + $canvas_prop + 'px; width:' + $canvas_prop + 'px;' +
-                        //'"><canvas height="' + ($canvas_prop - (1*2)) +
-                        //'" width="' + ($canvas_prop - (1*2)) +
                         '"><canvas height="' + ($canvas_prop) +
                         '" width="' + ($canvas_prop) +
                         '" id="' + id_canvas
-                        //+'" style="border:'+canvas_stroke+'px solid #000;'
+                        +'" style="border:'+canvas_stroke+'px solid #000;'
                         +
                         '"></canvas></div>'
                     );
@@ -227,140 +225,115 @@ window.addEventListener("touchstart", function() {
             var _this = this,
                 draging_from;
             draging_from = _this.lowerCanvasEl.id;
-            //console.log("onObjectDrag called on object:moving")
-            //console.log("draging_from =>"+ draging_from);
 
             for (var c_id = 0; c_id < canvas_Obj_id.length; c_id++) {
                 var draging_to = canvas_Obj_id[c_id];
                 if (draging_to != undefined) {
-                    canvas_Obj[draging_to].on("mouse:moved", canvas.generate.onObjectMoving(evnt, draging_from, draging_to, _this))
-
+                    //canvas_Obj[draging_to].on("mouse:moved", canvas.generate.onObjectMoving(evnt, draging_from, draging_to, _this))
+                    canvas_Obj[draging_to].on("mouse:moved", canvas.generate.objectMoved(evnt, draging_from, draging_to, _this))
                 }
             }
         },
 
-        onObjectMoving: function(evnt, dragin_from, draging_to, _this) {
-            if (evnt.e.target.previousSibling != null) {
-                draging_to = evnt.e.target.previousSibling.id
-                if ( (draging_to != undefined) && (draging_to != dragin_from)) {
-                    //console.log( 'evnt.target  => '+ evnt.target);
+        objectMoved: function(evnt, dragin_from, draging_to, _this){
+                var activeCanvas;
+                activeCanvas = evnt.e.target.previousSibling.id;
+            
+            if (dragin_from != activeCanvas) {
+                //console.log("evnt => "+ evnt + ";\n dragin_from => "+ dragin_from+ ";\n draging_to => "+ activeCanvas+ ";\n _this => "+ _this);
+                //return;
+                draging_to = activeCanvas;
+                var activeObjects = _this.getActiveObjects(),
+                    object, objsToRender, activeGroupObjects,
+                    dragin_from = canvas_Obj[dragin_from],
+                    draging_to = canvas_Obj[draging_to];
+                if (activeObjects.length > 0 ) {
+                    var objsToRender = [],
+                    activeGroupObjects = [],
+                    setActive = [];
 
-                    var viewport = _this.calcViewportBoundaries(), from = canvas_Obj[dragin_from], to = canvas_Obj[draging_to];
-                    var activeObject = from.getActiveObject();
-                    var activeGroup = from.getActiveObjects();
-                    //console.log( activeObject, activeGroup)
-                    if (evnt.target._objects == undefined) {
-                        if (evnt.target.canvas === from) {
-                            if ((evnt.target.left > viewport.br.x || evnt.target.left < viewport.tl.x) || (evnt.target.top > viewport.bl.y || evnt.target.top < viewport.br.y)) {
-                                canvas.generate.moveItem(from, to, evnt.target);
-                                return;
+                    if (draging_to && ( draging_to != dragin_from ) ) {
+                        var pendingTransform = dragin_from._currentTransform;
+                        dragin_from._currentTransform = null;
+                        
+                        setActive = evnt.target;
+
+                        if (activeObjects.length > 1) {
+                            //console.log(evnt.target._objects);
+                            var obj = evnt.target._objects;
+                            for (x in obj) {
+                                var nodeToMove = obj[x];
+                                renderObj(dragin_from, draging_to, nodeToMove);
                             }
-                        }
-                    } else {
-                        if (from.getActiveObject() != null ) {
-                            //console.log(from, to);
-                            //console.log(evnt.target.left, viewport.br.x);
-                            if (evnt.target.canvas === from && ((evnt.target.left > viewport.br.x || evnt.target.left < viewport.tl.x) || (evnt.target.top > viewport.bl.y || evnt.target.top < viewport.br.y))) {
-                                var obj_group=[], pTransform;
 
-                                if (activeGroup.length > 0) {
-                                    for (var g = 0; g < activeGroup.length; g++) {
-                                        var activeSubObj = null;
+                            draging_to._currentTransform = pendingTransform;
+                            dragin_from.discardActiveObject();
+                            draging_to.setActiveObject(setActive);
 
-                                        activeSubObj = activeGroup[g];
-                                        from.remove(activeSubObj);
-                                        pTransform = from._currentTransform;
-
-                                        activeSubObj.scaleX;
-                                        activeSubObj.canvas = to;
-                                        activeSubObj.migrated = true;
-
-                                        activeSubObj.setCoords();
-                                        to.add(activeSubObj);
-                                        obj_group.push(activeSubObj);
-                                        //activeSubObj.set('active', true);
-                                    }
-                                }
-                                //to._objects = obj_group;
-                                //to._currentTransform = pTransform;
-                                //from._currentTransform = null;
-                                //debugger;
-                                from.discardActiveObject();
-                                //from.remove(activeGroup);
-                                //to.setActiveObject(obj_group);
-                            }
+                        }else {
+                            renderObj(dragin_from, draging_to, evnt.target);
+                            draging_to._currentTransform = pendingTransform;
+                            draging_to.setActiveObject(setActive);
                         }
                     }
                 }
-            } else {
-                //debugger;
-                console.log(" Draging to =>"+evnt.e.target.previousSibling)
-                return false;
+
+                function renderObj(from, to, target){
+
+                    from.remove(target);
+                    
+                    canvas.generate.addRemoveEvents(from, to);
+
+                    setTimeout(function() {
+                        target.canvas = to;
+                        target.migrated = true;
+
+                        to.add(target);
+                    }, 10);
+                }
             }
-        },
+        }, 
+        
+        addRemoveEvents: function(fromCanvas, toCanvas) {
+            var removeListener = fabric.util.removeListener;
+            var addListener = fabric.util.addListener; {
+                removeListener(fabric.document, 'mouseup', fromCanvas._onMouseUp);
+                removeListener(fabric.document, 'touchend', fromCanvas._onMouseUp);
 
-        moveActiveSelection: function(){
+                removeListener(fabric.document, 'mousemove', fromCanvas._onMouseMove);
+                removeListener(fabric.document, 'touchmove', fromCanvas._onMouseMove);
 
-        },
+                addListener(fromCanvas.upperCanvasEl, 'mousemove', fromCanvas._onMouseMove);
+                addListener(fromCanvas.upperCanvasEl, 'touchmove', fromCanvas._onMouseMove, {
+                    passive: false
+                });
 
-        moveItem: function(fromCanvas, toCanvas, active_sub_obj) {
-            if( toCanvas != undefined ){
-                fromCanvas.remove(active_sub_obj);
-
-                var pendingTransform = fromCanvas._currentTransform;
-                fromCanvas._currentTransform = null;
-                //console.log(fabric.document)
-                var removeListener = fabric.util.removeListener;
-                var addListener = fabric.util.addListener; {
-                    removeListener(fabric.document, 'mouseup', fromCanvas._onMouseUp);
-                    removeListener(fabric.document, 'touchend', fromCanvas._onMouseUp);
-
-                    removeListener(fabric.document, 'mousemove', fromCanvas._onMouseMove);
-                    removeListener(fabric.document, 'touchmove', fromCanvas._onMouseMove);
-
-                    addListener(fromCanvas.upperCanvasEl, 'mousemove', fromCanvas._onMouseMove);
-                    addListener(fromCanvas.upperCanvasEl, 'touchmove', fromCanvas._onMouseMove, {
-                        passive: false
-                    });
-
-                    if (isTouchDevice) {
-                        // Wait 300ms before rebinding mousedown to prevent double triggers
-                        // from touch devices
-                        var _this = fromCanvas;
-                        setTimeout(function() {
-                            addListener(_this.upperCanvasEl, 'mousedown', _this._onMouseDown);
-                        }, 300);
-                    }
-                } {
-                    addListener(fabric.document, 'touchend', toCanvas._onMouseUp, {
-                        passive: false
-                    });
-                    addListener(fabric.document, 'touchmove', toCanvas._onMouseMove, {
-                        passive: false
-                    });
-
-                    removeListener(toCanvas.upperCanvasEl, 'mousemove', toCanvas._onMouseMove);
-                    removeListener(toCanvas.upperCanvasEl, 'touchmove', toCanvas._onMouseMove);
-
-                    if (isTouchDevice) {
-                        // Unbind mousedown to prevent double triggers from touch devices
-                        removeListener(toCanvas.upperCanvasEl, 'mousedown', toCanvas._onMouseDown);
-                    } else {
-                        addListener(fabric.document, 'mouseup', toCanvas._onMouseUp);
-                        addListener(fabric.document, 'mousemove', toCanvas._onMouseMove);
-                    }
+                if (isTouchDevice) {
+                    // Wait 300ms before rebinding mousedown to prevent double triggers
+                    // from touch devices
+                    var _this = fromCanvas;
+                    setTimeout(function() {
+                        addListener(_this.upperCanvasEl, 'mousedown', _this._onMouseDown);
+                    }, 300);
                 }
+            } {
+                addListener(fabric.document, 'touchend', toCanvas._onMouseUp, {
+                    passive: false
+                });
+                addListener(fabric.document, 'touchmove', toCanvas._onMouseMove, {
+                    passive: false
+                });
 
+                removeListener(toCanvas.upperCanvasEl, 'mousemove', toCanvas._onMouseMove);
+                removeListener(toCanvas.upperCanvasEl, 'touchmove', toCanvas._onMouseMove);
 
-                setTimeout(function() {
-                    active_sub_obj.scaleX;
-                    active_sub_obj.canvas = toCanvas;
-                    active_sub_obj.migrated = true;
-
-                    toCanvas.add(active_sub_obj);
-                    toCanvas._currentTransform = pendingTransform;
-                    toCanvas.setActiveObject(active_sub_obj);
-                }, 10);
+                if (isTouchDevice) {
+                    // Unbind mousedown to prevent double triggers from touch devices
+                    removeListener(toCanvas.upperCanvasEl, 'mousedown', toCanvas._onMouseDown);
+                } else {
+                    addListener(fabric.document, 'mouseup', toCanvas._onMouseUp);
+                    addListener(fabric.document, 'mousemove', toCanvas._onMouseMove);
+                }
             }
         }
     }
