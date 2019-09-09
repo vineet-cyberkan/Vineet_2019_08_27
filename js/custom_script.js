@@ -3,7 +3,7 @@ var d_Cont = '#dynamic_content',
     photos_Data = [],
     canvas_Data = [],
     canvas_Obj = [],
-    canvas_Obj_id = [];
+    obj_id_canvas = [];
 var isTouchDevice = false;
 window.addEventListener("touchstart", function() {
     isTouchDevice = true;
@@ -63,7 +63,6 @@ window.addEventListener("touchstart", function() {
         },
 
         selectCanvas: function(e) {
-            //debugger;
             var canvas_value = $('#select').val(),
                 selected_canvas = canvas_value;
 
@@ -80,8 +79,6 @@ window.addEventListener("touchstart", function() {
 
         genrateCanvasData: function(data, selected_canvas) {
             var random_obj, data_nodes = [1, 2];
-            // genrateCanvasData: function(data, id){
-            //     var selected_canvas = new fabric.Canvas(id), random_obj, data_nodes =[1, 2];
 
             random_obj = canvas.generate.generate_uniq_int(3, 4997); //for object randomly from the JSON endpoint
             data_nodes.push(random_obj, data.length - 2, data.length - 1); // 1. Select the first 2 objects, last 2 objects, and 1 object randomly from the JSON endpoint. 
@@ -118,7 +115,6 @@ window.addEventListener("touchstart", function() {
                 }
             }
 
-            //console.log( canvas_Data );
             if (canvas_Data.length > 0) {
                 for (var m = 0; m < canvas_Data.length; m++) {
                     var node = canvas_Data[m];
@@ -127,13 +123,12 @@ window.addEventListener("touchstart", function() {
                             node = node[0],
                             top_pos = parseInt( canvas.generate.generate_uniq_int(10, parseInt($('#id_canvasParent_1').width() - 50) ) );
 
-                        //console.log(top_pos);
+                        //console.log(top_pos + " random top position of element");
                         //console.log(selected_canvas);
 
                         if (tag_name == "image") {
 
                             fabric.Image.fromURL(node, function(img) {
-                                //i create an extra var for to change some image properties
                                 var thumbnailUrl = img.set({
                                     left: 10,
                                     top: top_pos
@@ -172,7 +167,7 @@ window.addEventListener("touchstart", function() {
 
         dynamicHtmlNode: function() {
             canvas_Obj = [];
-            canvas_Obj_id = [];
+            obj_id_canvas = [];
             if (photos_Data.length > 0) {
                 var dynamic_select = $('<select id="select" class="form-control"><option value="0">Canvas #</option></select>'),
                     btn_Insert = '<a href="javascript:void(0)" class="btn btn-primary" id="insert_canvas">Insert to Canvas</a>',
@@ -212,7 +207,7 @@ window.addEventListener("touchstart", function() {
                     var canvas_obj_prop = new fabric.Canvas(id_canvas);
                     canvas_Obj[id_canvas] = canvas_obj_prop;
                     canvas_obj_prop.on("object:moving", canvas.generate.onObjectDrag);
-                    canvas_Obj_id.push(id_canvas);
+                    obj_id_canvas.push(id_canvas);
                 }
                 /*canvas code end here*/
 
@@ -225,14 +220,16 @@ window.addEventListener("touchstart", function() {
             var _this = this,
                 draging_from;
             draging_from = _this.lowerCanvasEl.id;
-
-            for (var c_id = 0; c_id < canvas_Obj_id.length; c_id++) {
-                var draging_to = canvas_Obj_id[c_id];
-                if (draging_to != undefined) {
-                    //canvas_Obj[draging_to].on("mouse:moved", canvas.generate.onObjectMoving(evnt, draging_from, draging_to, _this))
-                    canvas_Obj[draging_to].on("mouse:moved", canvas.generate.objectMoved(evnt, draging_from, draging_to, _this))
+            /* move object to any canvas start*/
+            setTimeout(function() {
+                for (var c_id = 0; c_id < obj_id_canvas.length; c_id++) {
+                    var draging_to = obj_id_canvas[c_id];
+                    if (draging_to != undefined) {
+                        canvas_Obj[draging_to].on("mouse:moved", canvas.generate.objectMoved(evnt, draging_from, draging_to, _this))
+                    }
                 }
-            }
+            }, 100 );
+            /* move object to any canvas end*/
         },
 
         objectMoved: function(evnt, dragin_from, draging_to, _this){
@@ -257,32 +254,24 @@ window.addEventListener("touchstart", function() {
                         dragin_from._currentTransform = null;
                         
                         setActive = evnt.target;
-                        //console.log(activeObjects)
-                        //return;
                         if (activeObjects.length > 1) {
-                            //console.log(evnt.target._objects);
                             var obj = evnt.target._objects;
                             for (x in obj) {
                                 var nodeToMove = obj[x];
                                 renderObj(dragin_from, draging_to, nodeToMove);
                             }
 
-                            // draging_to._currentTransform = pendingTransform;
-                            // dragin_from.discardActiveObject();
-                            // setActiveObject_custom(setActive, evnt, dragin_from, draging_to);
-                            // draging_to._updateActiveSelection()
+                            draging_to._currentTransform = pendingTransform;
+                            dragin_from.discardActiveObject();
+                            setActiveObject_custom(setActive, evnt, dragin_from, draging_to);
+                            draging_to._updateActiveSelection();
 
-                        }else {
+                        } else {
                             renderObj(dragin_from, draging_to, evnt.target);
-                            // draging_to._currentTransform = pendingTransform;
-                            // dragin_from.discardActiveObject();
-                            // setActiveObject_custom(setActive, evnt, dragin_from, draging_to);
-                            // draging_to._updateActiveSelection()
+                            draging_to._currentTransform = pendingTransform;
+                            draging_to.setActiveObject(setActive);
                         }
-                        draging_to._currentTransform = pendingTransform;
-                        dragin_from.discardActiveObject();
-                        setActiveObject_custom(setActive, evnt, dragin_from, draging_to);
-                        draging_to._updateActiveSelection()
+                        return false;
                     }
                 }
 
@@ -292,12 +281,12 @@ window.addEventListener("touchstart", function() {
                     
                     canvas.generate.addRemoveEvents(from, to);
 
-                    setTimeout(function() {
+                    //setTimeout(function() {
                         target.canvas = to;
                         target.migrated = true;
 
                         to.add(target);
-                    }, 10);
+                    //}, 10);
                 }
 
 
@@ -359,11 +348,12 @@ window.onload = function() {
     if ($(d_Cont).length) {
         canvas.generate.init(); // data request sent on page load
     }
-
+    /* create dynamic select dropdown start*/
     $(document).on('click', '#genrate_canvas', function() {
         canvas.generate.dynamicHtmlNode();
         canvas_Data = [];
     });
+    /* create dynamic select dropdown end*/
 
     $(document).on('click', '#insert_canvas', function(event) {
         if (!$(this).attr('disabled')) {
