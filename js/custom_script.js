@@ -267,17 +267,22 @@ window.addEventListener("touchstart", function() {
                                 renderObj(dragin_from, draging_to, nodeToMove);
                             }
 
-                            draging_to._currentTransform = pendingTransform;
-                            dragin_from.discardActiveObject();
-
-                            setActiveObject_custom(setActive, evnt, dragin_from, draging_to);
-                            draging_to._updateActiveSelection()
+                            // draging_to._currentTransform = pendingTransform;
+                            // dragin_from.discardActiveObject();
+                            // setActiveObject_custom(setActive, evnt, dragin_from, draging_to);
+                            // draging_to._updateActiveSelection()
 
                         }else {
                             renderObj(dragin_from, draging_to, evnt.target);
-                            draging_to._currentTransform = pendingTransform;
-                            draging_to.setActiveObject(setActive, evnt);
+                            // draging_to._currentTransform = pendingTransform;
+                            // dragin_from.discardActiveObject();
+                            // setActiveObject_custom(setActive, evnt, dragin_from, draging_to);
+                            // draging_to._updateActiveSelection()
                         }
+                        draging_to._currentTransform = pendingTransform;
+                        dragin_from.discardActiveObject();
+                        setActiveObject_custom(setActive, evnt, dragin_from, draging_to);
+                        draging_to._updateActiveSelection()
                     }
                 }
 
