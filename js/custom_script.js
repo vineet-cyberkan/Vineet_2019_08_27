@@ -257,7 +257,8 @@ window.addEventListener("touchstart", function() {
                         dragin_from._currentTransform = null;
                         
                         setActive = evnt.target;
-
+                        //console.log(activeObjects)
+                        //return;
                         if (activeObjects.length > 1) {
                             //console.log(evnt.target._objects);
                             var obj = evnt.target._objects;
@@ -268,12 +269,14 @@ window.addEventListener("touchstart", function() {
 
                             draging_to._currentTransform = pendingTransform;
                             dragin_from.discardActiveObject();
-                            draging_to.setActiveObject(setActive);
+
+                            setActiveObject_custom(setActive, evnt, dragin_from, draging_to);
+                            draging_to._updateActiveSelection()
 
                         }else {
                             renderObj(dragin_from, draging_to, evnt.target);
                             draging_to._currentTransform = pendingTransform;
-                            draging_to.setActiveObject(setActive);
+                            draging_to.setActiveObject(setActive, evnt);
                         }
                     }
                 }
@@ -290,6 +293,14 @@ window.addEventListener("touchstart", function() {
 
                         to.add(target);
                     }, 10);
+                }
+
+
+                function setActiveObject_custom(setActive, evnt, dragin_from, draging_to) {
+                    var currentActives = dragin_from.getActiveObjects();
+                    draging_to._setActiveObject(setActive, evnt);
+                    draging_to._fireSelectionEvents(currentActives, evnt);
+                    return draging_to;
                 }
             }
         }, 
